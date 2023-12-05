@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulateur de Prêt</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* Alignement à gauche */
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column; /* Afficher chaque paire label-champ en colonne */
+      gap: 10px;
+      margin-top: 20px;
+      width: 80%;
+    }
+
+    .label-field {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row; /* Aligner les labels et champs en ligne */
+      align-items: center;
+      gap: 10px; /* Espacement entre label et champ */
+    }
+
+    .input-field {
+      width: 20%; /* Ajuste la largeur selon tes besoins */
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      padding: 3px; /* Ajuste le padding selon tes besoins */
+      margin-top: 5px;
+    }
+
+    table {
+      width: 80%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Simulateur de Prêt</h1>
+
+<div class="input-container">
+  <!-- Label et champ du montant -->
+  <div class="label-field">
+    <label for="amount">Montant :</label>
+    <input type="number" id="amount" class="input-field" placeholder="Montant du prêt" min="1000" step="1000" required>
+  </div>
+
+  <!-- Label et champ de la durée -->
+  <div class="label-field">
+    <label for="years">Année :</label>
+    <input type="number" id="years" class="input-field" placeholder="Durée du prêt" min="1" required>
+  </div>
+
+  <!-- Label et champ du taux d'intérêt -->
+  <div class="label-field">
+    <label for="interestRate">Taux :</label>
+    <input type="number" id="interestRate" class="input-field" placeholder="Taux d'intérêt" step="0.1" required>
+  </div>
+</div>
+
+<table id="resultTable">
+  <!-- Tableau des résultats ici -->
+  <tr>
+    <th>Période</th>
+    <th>Capital Amorti</th>
+    <th>Intérêt</th>
+    <th>Capital Restant Du</th>
+    <th>Mensualité</th>
+  </tr>
+  <!-- Les résultats seront ajoutés ici -->
+</table>
+
+<script>
+  // Script de calcul des échéances
+  document.getElementById('amount').addEventListener('input', calculate);
+  document.getElementById('years').addEventListener('input', calculate);
+  document.getElementById('interestRate').addEventListener('input', calculate);
+
+  function calculate() {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const years = parseInt(document.getElementById('years').value);
+    const interestRateInput = document.getElementById('interestRate').value.trim(); // Ajout de trim() pour éliminer les espaces
+
+    // Vérifier si le taux d'intérêt est une valeur numérique positive
+    const interestRate = Math.max(0, parseFloat(interestRateInput));
+
+    const monthlyRate = interestRate / 100 / 12;
+    const totalPayments = years * 12;
+
+    const factor = Math.pow(1 + monthlyRate, totalPayments);
+    const monthlyPayment = (amount * monthlyRate * factor) / (factor - 1);
+
+    const resultTable = document.getElementById('resultTable');
+    resultTable.innerHTML = ''; // Clear existing data
+
+    for (let period = 1; period <= totalPayments; period++) {
+      const interest = (amount - (amount * (period - 1)) / totalPayments) * monthlyRate;
+      const principal = monthlyPayment - interest;
+      const remainingBalance = amount - principal * period;
+
+      const row = resultTable.insertRow();
+      row.insertCell(0).textContent = period;
+      row.insertCell(1).textContent = principal.toFixed(2);
+      row.insertCell(2).textContent = interest.toFixed(2);
+      row.insertCell(3).textContent = remainingBalance.toFixed(2);
+      row.insertCell(4).textContent = monthlyPayment.toFixed(2);
+    }
+  }
+</script>
+
+</body>
+</html>
